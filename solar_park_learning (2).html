@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Solar Park Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --sun: #FFB703;
+    --sun-light: #FFF3CD;
+    --sun-dark: #FB8500;
+    --sky: #219EBC;
+    --sky-light: #D0EFFA;
+    --sky-dark: #023047;
+    --green: #52B788;
+    --green-light: #D8F3DC;
+    --green-dark: #1B4332;
+    --purple: #7B2D8B;
+    --purple-light: #EDE7F6;
+    --white: #FFFFFF;
+    --bg: #F7F9FC;
+    --card: #FFFFFF;
+    --text: #1a1a2e;
+    --text-muted: #5a6a7a;
+    --radius: 20px;
+    --radius-sm: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ========== SCREENS ========== */
+  .screen { display: none; min-height: 100vh; }
+  .screen.active { display: flex; flex-direction: column; }
+
+  /* ========== WELCOME SCREEN ========== */
+  #screen-welcome {
+    background: linear-gradient(160deg, #023047 0%, #219EBC 50%, #FFB703 100%);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sun-decoration {
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, #FFB703 40%, #FB8500 100%);
+    border-radius: 50%;
+    opacity: 0.25;
+  }
+
+  .welcome-card {
+    background: rgba(255,255,255,0.97);
+    border-radius: 28px;
+    padding: 48px 40px;
+    max-width: 520px;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 8px 40px rgba(2,48,71,0.25);
+  }
+
+  .sun-icon {
+    font-size: 72px;
+    display: block;
+    margin-bottom: 12px;
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+
+  .welcome-card h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 38px;
+    color: var(--sky-dark);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .welcome-card .subtitle {
+    font-size: 17px;
+    color: var(--text-muted);
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  .name-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--sky-dark);
+    display: block;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  .name-input {
+    width: 100%;
+    padding: 16px 20px;
+    border-radius: var(--radius-sm);
+    border: 3px solid var(--sky-light);
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--sky-dark);
+    background: var(--sky-light);
+    outline: none;
+    margin-bottom: 24px;
+    transition: border-color 0.2s;
+    text-align: center;
+  }
+  .name-input:focus { border-color: var(--sky); }
+
+  .btn-start {
+    background: var(--sun);
+    color: var(--sky-dark);
+    border: none;
+    border-radius: 50px;
+    padding: 18px 48px;
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    cursor: pointer;
+    width: 100%;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 0 var(--sun-dark);
+  }
+  .btn-start:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--sun-dark); }
+  .btn-start:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--sun-dark); }
+
+  /* ========== MAIN APP ========== */
+  #screen-app {
+    flex-direction: column;
+    background: var(--bg);
+  }
+
+  /* ========== HEADER ========== */
+  .app-header {
+    background: var(--sky-dark);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 12px; }
+
+  .header-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 22px;
+    color: var(--sun);
+    white-space: nowrap;
+  }
+
+  .header-greeting {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+    font-weight: 600;
+  }
+  .header-name {
+    font-size: 16px;
+    color: #fff;
+    font-weight: 800;
+  }
+
+  .points-badge {
+    background: var(--sun);
+    color: var(--sky-dark);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-weight: 800;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+
+  /* ========== NAV TABS ========== */
+  .nav-tabs {
+    display: flex;
+    background: var(--sky-dark);
+    padding: 0 24px 16px;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .nav-tab {
+    background: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.75);
+    border: none;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-tab:hover { background: rgba(255,255,255,0.2); color: #fff; }
+  .nav-tab.active { background: var(--sun); color: var(--sky-dark); }
+
+  /* ========== CONTENT AREA ========== */
+  .content-area {
+    flex: 1;
+    padding: 24px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  /* ========== SECTION TITLE ========== */
+  .section-header {
+    margin-bottom: 24px;
+  }
+  .section-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 30px;
+    color: var(--sky-dark);
+    margin-bottom: 4px;
+  }
+  .section-header p {
+    color: var(--text-muted);
+    font-size: 15px;
+  }
+
+  /* ========== CARD ========== */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(2,48,71,0.07);
+    border: 2px solid transparent;
+  }
+
+  .card.highlight { border-color: var(--sun); }
+
+  .card-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 20px;
+    color: var(--sky-dark);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-desc {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  /* ========== ACTIVITY BADGE ========== */
+  .activity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .badge-quiz { background: #EDE7F6; color: #4A148C; }
+  .badge-game { background: #E8F5E9; color: #1B5E20; }
+  .badge-drag { background: #FFF3E0; color: #E65100; }
+  .badge-match { background: #E3F2FD; color: #0D47A1; }
+  .badge-draw { background: #FCE4EC; color: #880E4F; }
+
+  /* ========== BUTTONS ========== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); }
+
+  .btn-primary {
+    background: var(--sky);
+    color: #fff;
+    box-shadow: 0 3px 0 var(--sky-dark);
+  }
+  .btn-success {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 3px 0 var(--green-dark);
+  }
+  .btn-sun {
+    background: var(--sun);
+    color: var(--sky-dark);
+    box-shadow: 0 3px 0 var(--sun-dark);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--sky);
+    border: 2.5px solid var(--sky);
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* ========== QUIZ STYLES ========== */
+  .quiz-question {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--sky-dark);
+    margin-bottom: 24px;
+    line-height: 1.4;
+  }
+
+  .quiz-options {
+    display: grid;
+    gap: 12px;
+  }
+
+  .quiz-option {
+    background: var(--bg);
+    border: 3px solid #e0e8f0;
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .quiz-option:hover { border-color: var(--sky); background: var(--sky-light); transform: translateX(4px); }
+  .quiz-option.correct { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+  .quiz-option.wrong { background: #FFEBEE; border-color: #EF5350; color: #B71C1C; }
+  .quiz-option.disabled { cursor: default; transform: none; }
+
+  .option-letter {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: #e0e8f0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .correct .option-letter { background: var(--green); color: #fff; }
+  .wrong .option-letter { background: #EF5350; color: #fff; }
+
+  .feedback-box {
+    border-radius: var(--radius-sm);
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 15px;
+    font-weight: 700;
+    display: none;
+  }
+  .feedback-box.show { display: block; }
+  .feedback-box.correct { background: var(--green-light); color: var(--green-dark); border-left: 5px solid var(--green); }
+  .feedback-box.wrong { background: #FFEBEE; color: #B71C1C; border-left: 5px solid #EF5350; }
+
+  .progress-bar-wrap {
+    background: #e0e8f0;
+    border-radius: 50px;
+    height: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sky), var(--sun));
+    border-radius: 50px;
+    transition: width 0.4s ease;
+  }
+
+  .q-counter {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  /* ========== DRAG AND DROP ========== */
+  .drag-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+
+  .drag-pool {
+    flex: 1;
+    min-width: 200px;
+    background: var(--sky-light);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+  }
+
+  .drag-pool-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--sky-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
+  }
+
+  .drag-item {
+    background: #fff;
+    border: 2.5px solid var(--sky);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sky-dark);
+    cursor: grab;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .drag-item:hover { transform: scale(1.03); box-shadow: 0 4px 12px rgba(33,158,188,0.2); }
+  .drag-item.dragging { opacity: 0.4; }
+  .drag-item.placed { background: var(--green-light); border-color: var(--green); color: var(--green-dark); cursor: default; }
+  .drag-item.wrong-place { background: #FFEBEE; border-color: #EF5350; animation: shake 0.3s; }
+
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  .drop-zone {
+    background: #f0f8ff;
+    border: 3px dashed #b0cfe8;
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .drop-zone.drag-over { border-color: var(--sky); background: var(--sky-light); }
+  .drop-zone-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--sky-dark);
+    margin-bottom: 8px;
+  }
+  .drop-zone-hint {
+    font-size: 12px;
+    color: #90a4ae;
+    font-weight: 600;
+  }
+
+  /* ========== MATCHING ========== */
+  .match-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .match-col-title {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    grid-column: span 1;
+  }
+  .match-item {
+    background: #fff;
+    border: 2.5px solid #e0e8f0;
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    color: var(--text);
+    font-family: 'Nunito', sans-serif;
+  }
+  .match-item:hover { border-color: var(--sky); background: var(--sky-light); }
+  .match-item.selected { border-color: var(--sky); background: var(--sky); color: #fff; transform: scale(1.04); }
+  .match-item.matched { border-color: var(--green); background: var(--green-light); color: var(--green-dark); cursor: default; }
+  .match-item.wrong { border-color: #EF5350; background: #FFEBEE; animation: shake 0.3s; }
+
+  /* ========== FILL IN THE BLANK ========== */
+  .blank-sentence {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sky-dark);
+    line-height: 2.2;
+    margin-bottom: 20px;
+    background: var(--sky-light);
+    padding: 20px 24px;
+    border-radius: var(--radius-sm);
+    border-left: 5px solid var(--sky);
+  }
+
+  .blank-input {
+    border: none;
+    border-bottom: 3px solid var(--sky);
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--sky-dark);
+    width: 140px;
+    text-align: center;
+    outline: none;
+    padding: 2px 8px;
+    transition: border-color 0.2s;
+  }
+  .blank-input:focus { border-color: var(--sun); }
+  .blank-input.correct-fill { border-color: var(--green); color: var(--green-dark); background: var(--green-light); border-radius: 6px; }
+  .blank-input.wrong-fill { border-color: #EF5350; color: #B71C1C; background: #FFEBEE; border-radius: 6px; }
+
+  /* ========== PARK BUILDER ========== */
+  .park-canvas {
+    width: 100%;
+    height: 300px;
+    background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 55%, #52B788 55%, #52B788 100%);
+    border-radius: var(--radius-sm);
+    border: 3px solid #e0e8f0;
+    position: relative;
+    overflow: hidden;
+    cursor: crosshair;
+  }
+
+  .park-element {
+    position: absolute;
+    font-size: 36px;
+    cursor: grab;
+    user-select: none;
+    transition: transform 0.1s;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+  .park-element:hover { transform: scale(1.15); }
+
+  .park-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .park-tool-btn {
+    background: #fff;
+    border: 2.5px solid #e0e8f0;
+    border-radius: 12px;
+    padding: 10px 16px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .park-tool-btn span { font-size: 10px; font-weight: 700; color: var(--text-muted); font-family: 'Nunito', sans-serif; }
+  .park-tool-btn:hover { border-color: var(--sun); background: var(--sun-light); transform: scale(1.05); }
+  .park-tool-btn.active-tool { border-color: var(--sun); background: var(--sun-light); }
+
+  /* ========== SCORE RESULT ========== */
+  .result-box {
+    text-align: center;
+    padding: 32px;
+  }
+  .result-emoji { font-size: 64px; margin-bottom: 12px; display: block; }
+  .result-score { font-family: 'Fredoka One', cursive; font-size: 48px; color: var(--sun-dark); margin-bottom: 8px; }
+  .result-msg { font-size: 18px; font-weight: 700; color: var(--text-muted); }
+
+  /* ========== PROGRESS STARS ========== */
+  .stars-row { display: flex; gap: 4px; }
+  .star { font-size: 22px; color: #e0e8f0; }
+  .star.earned { color: var(--sun); }
+
+  /* ========== ACTIVITY LIST ========== */
+  .activity-list { display: flex; flex-direction: column; gap: 14px; }
+  .activity-row {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 18px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(2,48,71,0.06);
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .activity-row:hover { border-color: var(--sky); transform: translateX(4px); }
+  .activity-row.completed { border-color: var(--green); }
+  .activity-icon { font-size: 36px; flex-shrink: 0; }
+  .activity-info { flex: 1; }
+  .activity-title { font-weight: 800; font-size: 16px; color: var(--sky-dark); }
+  .activity-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .activity-status {
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 50px;
+    background: #e0e8f0;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .activity-status.done { background: var(--green-light); color: var(--green-dark); }
+
+  /* ========== TEACHER DASHBOARD ========== */
+  .teacher-gate {
+    text-align: center;
+    padding: 60px 24px;
+  }
+  .teacher-gate h2 { font-family: 'Fredoka One', cursive; font-size: 28px; color: var(--sky-dark); margin-bottom: 12px; }
+  .teacher-gate p { color: var(--text-muted); margin-bottom: 24px; }
+  .pin-input {
+    font-family: 'Fredoka One', cursive;
+    font-size: 32px;
+    text-align: center;
+    letter-spacing: 12px;
+    border: 3px solid var(--sky);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    width: 200px;
+    color: var(--sky-dark);
+    background: var(--sky-light);
+    outline: none;
+    margin-bottom: 16px;
+    display: block;
+    margin: 0 auto 16px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(2,48,71,0.07);
+  }
+  .stat-num { font-family: 'Fredoka One', cursive; font-size: 36px; color: var(--sky-dark); }
+  .stat-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .student-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .student-table th {
+    background: var(--sky-dark);
+    color: #fff;
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .student-table th:first-child { border-radius: 10px 0 0 0; }
+  .student-table th:last-child { border-radius: 0 10px 0 0; }
+  .student-table td { padding: 12px 16px; border-bottom: 1px solid #f0f4f8; color: var(--text); }
+  .student-table tr:hover td { background: var(--sky-light); }
+
+  .progress-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-light);
+    color: var(--green-dark);
+    border-radius: 50px;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .checkpoint-dot {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 2px;
+  }
+  .cp-done { background: var(--green); }
+  .cp-pending { background: #e0e8f0; }
+
+  /* ========== TOAST ========== */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--sky-dark);
+    color: #fff;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 16px;
+    font-weight: 700;
+    z-index: 999;
+    transition: transform 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success-toast { background: var(--green-dark); }
+
+  /* ========== RESPONSIVE ========== */
+  @media (max-width: 600px) {
+    .content-area { padding: 16px; }
+    .welcome-card { padding: 32px 24px; }
+    .welcome-card h1 { font-size: 30px; }
+    .match-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== WELCOME SCREEN ===================== -->
+<div id="screen-welcome" class="screen active">
+  <div class="sun-decoration"></div>
+  <div class="welcome-card">
+    <span class="sun-icon">☀️</span>
+    <h1>Solar Park Explorer</h1>
+    <p class="subtitle">Learn about solar energy and design your very own park in Abu Dhabi! 🌴</p>
+    <label class="name-label" for="student-name-input">What is your name?</label>
+    <input type="text" id="student-name-input" class="name-input" placeholder="Type your name..." autocomplete="off"/>
+    <button class="btn-start" onclick="startApp()">Let's Go! 🚀</button>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="screen-app" class="screen">
+
+  <!-- Header -->
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-logo">☀️ Solar Park</div>
+      <div>
+        <div class="header-greeting">Hello,</div>
+        <div class="header-name" id="header-name">Explorer</div>
+      </div>
+    </div>
+    <div class="points-badge">⭐ <span id="total-points">0</span> pts</div>
+  </div>
+
+  <!-- Nav Tabs -->
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('home')" id="tab-home">🏠 Home</button>
+    <button class="nav-tab" onclick="switchTab('activity1')" id="tab-activity1">☀️ Solar Quiz</button>
+    <button class="nav-tab" onclick="switchTab('activity2')" id="tab-activity2">🔗 Match It</button>
+    <button class="nav-tab" onclick="switchTab('activity3')" id="tab-activity3">📝 Fill Blanks</button>
+    <button class="nav-tab" onclick="switchTab('activity4')" id="tab-activity4">🧩 Sort It</button>
+    <button class="nav-tab" onclick="switchTab('activity5')" id="tab-activity5">🏗️ Build My Park</button>
+    <button class="nav-tab" onclick="switchTab('teacher')" id="tab-teacher">👩‍🏫 Teacher</button>
+  </div>
+
+  <!-- Content Area -->
+  <div class="content-area">
+
+    <!-- ===== HOME ===== -->
+    <div id="tab-content-home" class="tab-content">
+      <div class="section-header">
+        <h2 id="home-greeting">Welcome back, Explorer! 👋</h2>
+        <p>Choose an activity to start learning about solar energy. Complete them all to earn stars! ⭐</p>
+      </div>
+
+      <div class="activity-list">
+        <div class="activity-row" id="row-activity1" onclick="switchTab('activity1')">
+          <div class="activity-icon">☀️</div>
+          <div class="activity-info">
+            <div class="activity-title">Solar Energy Quiz</div>
+            <div class="activity-sub">5 questions about solar energy &amp; the Sun · 20 pts</div>
+          </div>
+          <div class="activity-status" id="status-activity1">Start</div>
+        </div>
+        <div class="activity-row" id="row-activity2" onclick="switchTab('activity2')">
+          <div class="activity-icon">🔗</div>
+          <div class="activity-info">
+            <div class="activity-title">Match the Words</div>
+            <div class="activity-sub">Connect each solar word to its meaning · 15 pts</div>
+          </div>
+          <div class="activity-status" id="status-activity2">Start</div>
+        </div>
+        <div class="activity-row" id="row-activity3" onclick="switchTab('activity3')">
+          <div class="activity-icon">📝</div>
+          <div class="activity-info">
+            <div class="activity-title">Fill in the Blanks</div>
+            <div class="activity-sub">Complete sentences about how solar panels work · 15 pts</div>
+          </div>
+          <div class="activity-status" id="status-activity3">Start</div>
+        </div>
+        <div class="activity-row" id="row-activity4" onclick="switchTab('activity4')">
+          <div class="activity-icon">🧩</div>
+          <div class="activity-info">
+            <div class="activity-title">Sort the Solar Features</div>
+            <div class="activity-sub">Drag items into the right park zone · 15 pts</div>
+          </div>
+          <div class="activity-status" id="status-activity4">Start</div>
+        </div>
+        <div class="activity-row" id="row-activity5" onclick="switchTab('activity5')">
+          <div class="activity-icon">🏗️</div>
+          <div class="activity-info">
+            <div class="activity-title">Build My Solar Park</div>
+            <div class="activity-sub">Design your own solar park with park elements · 10 pts</div>
+          </div>
+          <div class="activity-status" id="status-activity5">Start</div>
+        </div>
+      </div>
+
+      <div class="card highlight" style="margin-top:24px;">
+        <div class="card-title">📊 My Progress</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;">
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">Activities Done</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:32px;color:var(--sky-dark);"><span id="home-activities-done">0</span>/5</div>
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">Total Stars</div>
+            <div class="stars-row" id="home-stars">
+              <span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span><span class="star">⭐</span>
+            </div>
+          </div>
+          <div style="flex:1;min-width:120px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-muted);margin-bottom:6px;">Points Earned</div>
+            <div style="font-family:'Fredoka One',cursive;font-size:32px;color:var(--sun-dark);"><span id="home-points">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY 1: QUIZ ===== -->
+    <div id="tab-content-activity1" class="tab-content" style="display:none;">
+      <div class="section-header">
+        <h2>☀️ Solar Energy Quiz</h2>
+        <p>Answer all 5 questions. Take your time — you can do it!</p>
+      </div>
+      <div class="card" id="quiz-card">
+        <div class="q-counter" id="q-counter">Question 1 of 5</div>
+        <div class="progress-bar-wrap"><div class="progress-bar-fill" id="q-progress" style="width:20%"></div></div>
+        <div class="quiz-question" id="quiz-question"></div>
+        <div class="quiz-options" id="quiz-options"></div>
+        <div class="feedback-box" id="quiz-feedback"></div>
+        <div style="margin-top:20px;display:flex;justify-content:flex-end;" id="quiz-next-wrap" style="display:none;">
+          <button class="btn btn-primary" id="quiz-next-btn" onclick="nextQuestion()" style="display:none;">Next Question →</button>
+        </div>
+      </div>
+      <div class="card" id="quiz-result" style="display:none;">
+        <div class="result-box">
+          <span class="result-emoji" id="result-emoji">🎉</span>
+          <div class="result-score" id="result-score-text"></div>
+          <div class="result-msg" id="result-msg"></div>
+          <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="resetQuiz()">Try Again 🔄</button>
+            <button class="btn btn-success" onclick="switchTab('home')">Back to Home 🏠</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY 2: MATCHING ===== -->
+    <div id="tab-content-activity2" class="tab-content" style="display:none;">
+      <div class="section-header">
+        <h2>🔗 Match the Words</h2>
+        <p>Tap a word on the left, then tap its meaning on the right!</p>
+      </div>
+      <div class="card" id="match-card">
+        <div class="activity-badge badge-match">🔗 Matching Activity</div>
+        <div class="match-grid" id="match-grid"></div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-sun" onclick="checkMatching()">Check Answers ✓</button>
+          <button class="btn btn-outline" onclick="resetMatching()">Reset 🔄</button>
+        </div>
+        <div class="feedback-box" id="match-feedback"></div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY 3: FILL BLANKS ===== -->
+    <div id="tab-content-activity3" class="tab-content" style="display:none;">
+      <div class="section-header">
+        <h2>📝 Fill in the Blanks</h2>
+        <p>Complete the sentences using the word bank below!</p>
+      </div>
+      <div class="card">
+        <div class="activity-badge badge-quiz">📝 Writing Activity</div>
+        <div style="background:var(--sun-light);border-radius:var(--radius-sm);padding:16px;margin-bottom:20px;">
+          <div style="font-size:13px;font-weight:800;color:var(--sun-dark);margin-bottom:8px;">💡 Word Bank:</div>
+          <div id="word-bank" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        </div>
+        <div id="fill-sentences"></div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-sun" onclick="checkFill()">Check Answers ✓</button>
+          <button class="btn btn-outline" onclick="resetFill()">Try Again 🔄</button>
+        </div>
+        <div class="feedback-box" id="fill-feedback"></div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY 4: DRAG & DROP ===== -->
+    <div id="tab-content-activity4" class="tab-content" style="display:none;">
+      <div class="section-header">
+        <h2>🧩 Sort the Solar Features</h2>
+        <p>Drag each item into the correct zone in the park!</p>
+      </div>
+      <div class="card">
+        <div class="activity-badge badge-drag">🧩 Sorting Activity</div>
+        <div class="drag-container">
+          <div>
+            <div class="drag-pool">
+              <div class="drag-pool-title">🎯 Items to Sort</div>
+              <div id="drag-items-pool"></div>
+            </div>
+          </div>
+          <div style="flex:2;min-width:220px;">
+            <div class="drop-zone" id="dz-energy" ondragover="allowDrop(event)" ondrop="dropItem(event,'energy')">
+              <div class="drop-zone-label">⚡ Energy Sources</div>
+              <div class="drop-zone-hint">Drop energy items here</div>
+            </div>
+            <div style="height:12px;"></div>
+            <div class="drop-zone" id="dz-features" ondragover="allowDrop(event)" ondrop="dropItem(event,'features')">
+              <div class="drop-zone-label">🌳 Park Features</div>
+              <div class="drop-zone-hint">Drop park features here</div>
+            </div>
+            <div style="height:12px;"></div>
+            <div class="drop-zone" id="dz-waste" ondragover="allowDrop(event)" ondrop="dropItem(event,'waste')">
+              <div class="drop-zone-label">❌ Does NOT use solar energy</div>
+              <div class="drop-zone-hint">Drop non-solar items here</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn btn-sun" onclick="checkDrag()">Check Sorting ✓</button>
+          <button class="btn btn-outline" onclick="resetDrag()">Reset 🔄</button>
+        </div>
+        <div class="feedback-box" id="drag-feedback"></div>
+      </div>
+    </div>
+
+    <!-- ===== ACTIVITY 5: PARK BUILDER ===== -->
+    <div id="tab-content-activity5" class="tab-content" style="display:none;">
+      <div class="section-header">
+        <h2>🏗️ Build My Solar Park</h2>
+        <p>Click a tool, then click on the park canvas to place it!</p>
+      </div>
+      <div class="card">
+        <div class="activity-badge badge-draw">🎨 Creative Activity</div>
+        <div class="park-toolbar" id="park-toolbar"></div>
+        <div class="park-canvas" id="park-canvas" onclick="placeElement(event)"></div>
+        <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-muted);" id="park-item-count">Items placed: 0</div>
+          <button class="btn btn-outline btn-sm" onclick="clearPark()" style="padding:8px 18px;font-size:14px;">Clear 🗑️</button>
+          <button class="btn btn-success" onclick="savePark()" style="margin-left:auto;">Save My Park ✅</button>
+        </div>
+        <div style="margin-top:12px;font-size:14px;font-weight:700;color:var(--text-muted);" id="park-required-hint">
+          Tip: You need at least 1 Sun ☀️ + 1 Solar Panel 🔆 + 2 more features to complete your park!
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TEACHER DASHBOARD ===== -->
+    <div id="tab-content-teacher" class="tab-content" style="display:none;">
+      <div id="teacher-gate-view">
+        <div class="teacher-gate">
+          <h2>👩‍🏫 Teacher Dashboard</h2>
+          <p>Enter your PIN to view student progress</p>
+          <input type="password" class="pin-input" id="pin-input" maxlength="4" placeholder="PIN"/>
+          <div style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="checkPin()">Enter Dashboard →</button>
+          </div>
+          <div style="margin-top:10px;font-size:13px;color:var(--text-muted);">Demo PIN: 1234</div>
+        </div>
+      </div>
+      <div id="teacher-dashboard-view" style="display:none;">
+        <div class="section-header">
+          <h2>👩‍🏫 Class Dashboard</h2>
+          <p>Tracking student progress across all activities</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num" id="dash-students">1</div>
+            <div class="stat-label">Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="dash-avg">0</div>
+            <div class="stat-label">Avg Points</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="dash-complete">0%</div>
+            <div class="stat-label">Completion</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" id="dash-activities">0</div>
+            <div class="stat-label">Activities Done</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 Student Progress</div>
+          <div style="overflow-x:auto;margin-top:16px;">
+            <table class="student-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Points</th>
+                  <th>Activities</th>
+                  <th>Checkpoints</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="student-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Activity Completion</div>
+          <div id="activity-bars" style="margin-top:16px;display:flex;flex-direction:column;gap:14px;"></div>
+        </div>
+
+        <button class="btn btn-outline" onclick="logoutTeacher()" style="margin-top:16px;">Sign Out</button>
+      </div>
+    </div>
+
+  </div><!-- /content-area -->
+</div><!-- /screen-app -->
+
+<!-- Toast notification -->
+<div class="toast" id="toast">🎉 Great job!</div>
+
+<script>
+// ===================== STATE =====================
+const state = {
+  studentName: '',
+  points: 0,
+  activitiesDone: new Set(),
+  quizScore: 0,
+  matchScore: 0,
+  fillScore: 0,
+  dragScore: 0,
+  parkScore: 0,
+  parkItems: [],
+};
+
+// ===================== QUIZ DATA =====================
+const quizData = [
+  {
+    q: "Where does solar energy come from?",
+    options: ["The Moon 🌙", "The Sun ☀️", "The Wind 💨", "The Ground 🌍"],
+    answer: 1,
+    explanation: "Great! Solar energy comes from the Sun. The Sun gives us heat and light every day!"
+  },
+  {
+    q: "What does a solar panel do?",
+    options: [
+      "It makes it rain 🌧️",
+      "It stores water 💧",
+      "It turns sunlight into electricity ⚡",
+      "It cools the air ❄️"
+    ],
+    answer: 2,
+    explanation: "Correct! Solar panels catch sunlight and turn it into electricity we can use."
+  },
+  {
+    q: "Why is solar energy good for the UAE?",
+    options: [
+      "Because the UAE has lots of snow ❄️",
+      "Because the UAE is very sunny and hot ☀️",
+      "Because the UAE has many rivers 🌊",
+      "Because the UAE is very cold 🥶"
+    ],
+    answer: 1,
+    explanation: "Yes! The UAE has lots of sunshine — perfect for solar energy!"
+  },
+  {
+    q: "Which of these can use solar energy in a park?",
+    options: [
+      "A petrol car 🚗",
+      "A wood fire 🔥",
+      "A solar-powered light 💡",
+      "A gas cooker 🍳"
+    ],
+    answer: 2,
+    explanation: "Correct! Solar-powered lights use energy from the Sun to light up a park at night."
+  },
+  {
+    q: "What does the Sun give us?",
+    options: [
+      "Heat and Light ☀️",
+      "Rain and Wind 🌧️",
+      "Snow and Ice ❄️",
+      "Sand and Rocks 🏜️"
+    ],
+    answer: 0,
+    explanation: "Amazing! The Sun gives us heat and light — the most important things for solar energy."
+  }
+];
+
+let currentQ = 0;
+let quizAnswered = false;
+let quizAnswers = [];
+
+// ===================== MATCHING DATA =====================
+const matchPairs = [
+  { term: "Solar Energy ☀️", def: "Energy from the Sun" },
+  { term: "Solar Panel 🔆", def: "Turns sunlight into electricity" },
+  { term: "UAE 🇦🇪", def: "A very sunny country" },
+  { term: "Electricity ⚡", def: "Power we use in our homes" },
+  { term: "Sustainability 🌱", def: "Caring for our Earth" },
+];
+
+let matchSelected = { term: null, def: null };
+let matchDone = new Set();
+
+// ===================== FILL DATA =====================
+const fillSentences = [
+  { text: "The Sun gives us ___ and light.", answer: "heat", blank: "heat" },
+  { text: "Solar panels turn sunlight into ___.", answer: "electricity", blank: "electricity" },
+  { text: "The UAE has lots of ___ every day.", answer: "sunshine", blank: "sunshine" },
+  { text: "A solar park uses ___ energy to work.", answer: "solar", blank: "solar" },
+];
+
+const wordBank = ["heat", "electricity", "sunshine", "solar", "rain", "coal"];
+
+// ===================== DRAG DATA =====================
+const dragItems = [
+  { id: "d1", label: "☀️ Solar Panel", category: "energy" },
+  { id: "d2", label: "🌳 Park Bench", category: "features" },
+  { id: "d3", label: "⛽ Petrol Generator", category: "waste" },
+  { id: "d4", label: "🔆 Sun Tracker", category: "energy" },
+  { id: "d5", label: "💡 Solar Light", category: "energy" },
+  { id: "d6", label: "🎡 Playground", category: "features" },
+  { id: "d7", label: "🔥 Coal Heater", category: "waste" },
+  { id: "d8", label: "🌿 Solar Garden", category: "features" },
+];
+
+let dragPlaced = {};
+
+// ===================== PARK DATA =====================
+const parkTools = [
+  { emoji: "☀️", label: "Sun", req: true },
+  { emoji: "🔆", label: "Solar Panel", req: true },
+  { emoji: "💡", label: "Solar Light", req: false },
+  { emoji: "🌳", label: "Tree", req: false },
+  { emoji: "🪑", label: "Bench", req: false },
+  { emoji: "🎡", label: "Playground", req: false },
+  { emoji: "🏡", label: "Shelter", req: false },
+  { emoji: "🦋", label: "Garden", req: false },
+];
+
+let activeTool = null;
+let parkPlaced = [];
+
+// ===================== WELCOME =====================
+function startApp() {
+  const name = document.getElementById('student-name-input').value.trim();
+  if (!name) { showToast("Please type your name first! 😊"); return; }
+  state.studentName = name;
+  document.getElementById('header-name').textContent = name;
+  document.getElementById('home-greeting').textContent = `Hello, ${name}! 👋`;
+  document.getElementById('screen-welcome').classList.remove('active');
+  document.getElementById('screen-app').classList.add('active');
+  initQuiz();
+  initMatching();
+  initFill();
+  initDrag();
+  initPark();
+  saveToStorage();
+}
+
+// ===================== TAB SWITCHING =====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(`tab-content-${tab}`).style.display = 'block';
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'home') updateHome();
+  if (tab === 'teacher') loadTeacherDashboard();
+}
+
+// ===================== QUIZ =====================
+function initQuiz() {
+  currentQ = 0; quizAnswers = []; quizAnswered = false;
+  document.getElementById('quiz-card').style.display = 'block';
+  document.getElementById('quiz-result').style.display = 'none';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = quizData[currentQ];
+  document.getElementById('q-counter').textContent = `Question ${currentQ+1} of ${quizData.length}`;
+  document.getElementById('q-progress').style.width = `${((currentQ+1)/quizData.length)*100}%`;
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-feedback').classList.remove('show','correct','wrong');
+  document.getElementById('quiz-next-btn').style.display = 'none';
+  quizAnswered = false;
+
+  const letters = ['A','B','C','D'];
+  const container = document.getElementById('quiz-options');
+  container.innerHTML = '';
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-option';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => answerQuestion(i, btn);
+    container.appendChild(btn);
+  });
+}
+
+function answerQuestion(idx, btn) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const q = quizData[currentQ];
+  const correct = idx === q.answer;
+  const fb = document.getElementById('quiz-feedback');
+  document.querySelectorAll('.quiz-option').forEach(b => b.classList.add('disabled'));
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (correct) {
+    document.querySelectorAll('.quiz-option')[q.answer].classList.add('correct');
+    fb.className = 'feedback-box show correct';
+    fb.innerHTML = `✅ ${q.explanation}`;
+    quizAnswers.push(true);
+  } else {
+    document.querySelectorAll('.quiz-option')[q.answer].classList.add('correct');
+    fb.className = 'feedback-box show wrong';
+    fb.innerHTML = `❌ Not quite! ${q.explanation}`;
+    quizAnswers.push(false);
+  }
+  document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+}
+
+function nextQuestion() {
+  currentQ++;
+  if (currentQ >= quizData.length) { showQuizResult(); return; }
+  renderQuestion();
+}
+
+function showQuizResult() {
+  const score = quizAnswers.filter(Boolean).length;
+  const pts = score * 4;
+  document.getElementById('quiz-card').style.display = 'none';
+  document.getElementById('quiz-result').style.display = 'block';
+  document.getElementById('result-score-text').textContent = `${score} / ${quizData.length} correct!`;
+  let emoji = '🤔', msg = 'Keep trying! You can do it!';
+  if (score === quizData.length) { emoji = '🏆'; msg = 'PERFECT! You are a Solar Energy Expert! Amazing!'; }
+  else if (score >= 3) { emoji = '🎉'; msg = 'Well done! You know a lot about solar energy!'; }
+  else if (score >= 2) { emoji = '😊'; msg = 'Good effort! Try again to get a higher score!'; }
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-msg').textContent = msg;
+  if (!state.activitiesDone.has('activity1')) {
+    state.points += pts;
+    state.quizScore = pts;
+    state.activitiesDone.add('activity1');
+    updatePointsDisplay();
+    markActivityDone('activity1', `${score}/${quizData.length} ⭐`);
+    showToast(`+${pts} points! ${emoji}`);
+    saveToStorage();
+  }
+}
+
+function resetQuiz() {
+  state.activitiesDone.delete('activity1');
+  initQuiz();
+}
+
+// ===================== MATCHING =====================
+function initMatching() {
+  matchSelected = { term: null, def: null };
+  matchDone.clear();
+  renderMatching();
+}
+
+function renderMatching() {
+  const grid = document.getElementById('match-grid');
+  const shuffledDefs = [...matchPairs].sort(() => Math.random()-0.5);
+  grid.innerHTML = `
+    <div style="font-size:13px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Solar Words</div>
+    <div style="font-size:13px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">Meanings</div>
+  `;
+  matchPairs.forEach((pair, i) => {
+    const termEl = document.createElement('button');
+    termEl.className = 'match-item';
+    termEl.textContent = pair.term;
+    termEl.dataset.type = 'term';
+    termEl.dataset.idx = i;
+    termEl.onclick = () => selectMatch(termEl, 'term', i);
+    grid.appendChild(termEl);
+    const defEl = document.createElement('button');
+    defEl.className = 'match-item';
+    defEl.textContent = shuffledDefs[i].def;
+    defEl.dataset.type = 'def';
+    defEl.dataset.defVal = shuffledDefs[i].def;
+    defEl.onclick = () => selectMatch(defEl, 'def', shuffledDefs[i].def);
+    grid.appendChild(defEl);
+  });
+}
+
+function selectMatch(el, type, val) {
+  if (el.classList.contains('matched')) return;
+  if (type === 'term') {
+    document.querySelectorAll('.match-item[data-type="term"]').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    matchSelected.term = { el, idx: val };
+  } else {
+    document.querySelectorAll('.match-item[data-type="def"]').forEach(e => e.classList.remove('selected'));
+    el.classList.add('selected');
+    matchSelected.def = { el, val };
+  }
+  if (matchSelected.term && matchSelected.def) {
+    const expected = matchPairs[matchSelected.term.idx].def;
+    if (matchSelected.def.val === expected) {
+      matchSelected.term.el.classList.add('matched'); matchSelected.term.el.classList.remove('selected');
+      matchSelected.def.el.classList.add('matched'); matchSelected.def.el.classList.remove('selected');
+      matchDone.add(matchSelected.term.idx);
+      showToast('✅ Correct match!', 'success');
+      if (matchDone.size === matchPairs.length) {
+        setTimeout(() => {
+          if (!state.activitiesDone.has('activity2')) {
+            state.points += 15; state.matchScore = 15;
+            state.activitiesDone.add('activity2');
+            updatePointsDisplay();
+            markActivityDone('activity2','All matched! ⭐');
+            showToast('+15 points! 🎉', 'success');
+            saveToStorage();
+          }
+          document.getElementById('match-feedback').className = 'feedback-box show correct';
+          document.getElementById('match-feedback').textContent = '🎉 Amazing! You matched all the words correctly!';
+        }, 400);
+      }
+    } else {
+      matchSelected.term.el.classList.add('wrong'); matchSelected.def.el.classList.add('wrong');
+      setTimeout(() => {
+        matchSelected.term.el.classList.remove('wrong','selected');
+        matchSelected.def.el.classList.remove('wrong','selected');
+      }, 600);
+    }
+    matchSelected = { term: null, def: null };
+  }
+}
+
+function checkMatching() {
+  if (matchDone.size === matchPairs.length) return;
+  document.getElementById('match-feedback').className = 'feedback-box show wrong';
+  document.getElementById('match-feedback').textContent = `Keep going! You've matched ${matchDone.size} of ${matchPairs.length} pairs. 😊`;
+}
+
+function resetMatching() {
+  state.activitiesDone.delete('activity2');
+  initMatching();
+  document.getElementById('match-feedback').className = 'feedback-box';
+}
+
+// ===================== FILL IN BLANK =====================
+function initFill() {
+  const bankEl = document.getElementById('word-bank');
+  bankEl.innerHTML = '';
+  wordBank.forEach(w => {
+    const chip = document.createElement('div');
+    chip.style.cssText = 'background:#fff;border:2px solid var(--sky);border-radius:50px;padding:6px 16px;font-size:14px;font-weight:700;color:var(--sky-dark);cursor:pointer;';
+    chip.textContent = w;
+    chip.onclick = () => focusedInputEl && (focusedInputEl.value = w);
+    bankEl.appendChild(chip);
+  });
+  const sentEl = document.getElementById('fill-sentences');
+  sentEl.innerHTML = '';
+  fillSentences.forEach((s, i) => {
+    const parts = s.text.split('___');
+    const div = document.createElement('div');
+    div.className = 'blank-sentence';
+    div.style.marginBottom = '14px';
+    div.innerHTML = parts[0] + `<input class="blank-input" id="fill-${i}" type="text" autocomplete="off" placeholder="..."/>` + (parts[1]||'');
+    sentEl.appendChild(div);
+    div.querySelector(`#fill-${i}`).addEventListener('focus', function(){ focusedInputEl = this; });
+  });
+}
+
+let focusedInputEl = null;
+
+function checkFill() {
+  let correct = 0;
+  fillSentences.forEach((s, i) => {
+    const inp = document.getElementById(`fill-${i}`);
+    const val = inp.value.trim().toLowerCase();
+    inp.classList.remove('correct-fill','wrong-fill');
+    if (val === s.answer) { inp.classList.add('correct-fill'); correct++; }
+    else { inp.classList.add('wrong-fill'); }
+  });
+  const fb = document.getElementById('fill-feedback');
+  if (correct === fillSentences.length) {
+    fb.className = 'feedback-box show correct';
+    fb.innerHTML = '🎉 Perfect! All blanks are correct! Amazing work!';
+    if (!state.activitiesDone.has('activity3')) {
+      state.points += 15; state.fillScore = 15;
+      state.activitiesDone.add('activity3');
+      updatePointsDisplay();
+      markActivityDone('activity3','All correct! ⭐');
+      showToast('+15 points! 🎉', 'success');
+      saveToStorage();
+    }
+  } else {
+    fb.className = 'feedback-box show wrong';
+    fb.innerHTML = `You got ${correct} of ${fillSentences.length} correct. Try fixing the red ones! 😊`;
+  }
+}
+
+function resetFill() {
+  fillSentences.forEach((s, i) => {
+    const inp = document.getElementById(`fill-${i}`);
+    inp.value = ''; inp.classList.remove('correct-fill','wrong-fill');
+  });
+  document.getElementById('fill-feedback').className = 'feedback-box';
+  state.activitiesDone.delete('activity3');
+}
+
+// ===================== DRAG & DROP =====================
+function initDrag() {
+  dragPlaced = {};
+  const pool = document.getElementById('drag-items-pool');
+  pool.innerHTML = '';
+  dragItems.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'drag-item';
+    el.draggable = true;
+    el.id = item.id;
+    el.textContent = item.label;
+    el.addEventListener('dragstart', e => {
+      e.dataTransfer.setData('text', item.id);
+      setTimeout(() => el.classList.add('dragging'), 0);
+    });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
+    pool.appendChild(el);
+  });
+  ['dz-energy','dz-features','dz-waste'].forEach(id => {
+    const zone = document.getElementById(id);
+    while (zone.children.length > 2) zone.removeChild(zone.lastChild);
+  });
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dropItem(e, zone) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const id = e.dataTransfer.getData('text');
+  const item = dragItems.find(d => d.id === id);
+  if (!item) return;
+  dragPlaced[id] = zone;
+  const zoneEl = document.getElementById(`dz-${zone}`);
+  const existing = document.getElementById(`placed-${id}`);
+  if (existing) existing.remove();
+  const placed = document.createElement('div');
+  placed.className = 'drag-item placed';
+  placed.id = `placed-${id}`;
+  placed.textContent = item.label;
+  zoneEl.appendChild(placed);
+  const orig = document.getElementById(id);
+  if (orig) orig.style.display = 'none';
+}
+
+function checkDrag() {
+  let correct = 0;
+  Object.entries(dragPlaced).forEach(([id, zone]) => {
+    const item = dragItems.find(d => d.id === id);
+    const el = document.getElementById(`placed-${id}`);
+    if (!el) return;
+    if (item.category === zone) { el.classList.add('placed'); el.classList.remove('wrong-place'); correct++; }
+    else { el.classList.add('wrong-place'); el.classList.remove('placed'); setTimeout(() => el.classList.remove('wrong-place'), 400); }
+  });
+  const fb = document.getElementById('drag-feedback');
+  if (correct === dragItems.length && Object.keys(dragPlaced).length === dragItems.length) {
+    fb.className = 'feedback-box show correct';
+    fb.innerHTML = '🎉 Amazing! You sorted everything correctly!';
+    if (!state.activitiesDone.has('activity4')) {
+      state.points += 15; state.dragScore = 15;
+      state.activitiesDone.add('activity4');
+      updatePointsDisplay();
+      markActivityDone('activity4','All sorted! ⭐');
+      showToast('+15 points! 🎉', 'success');
+      saveToStorage();
+    }
+  } else {
+    fb.className = 'feedback-box show wrong';
+    fb.innerHTML = `${correct} of ${dragItems.length} correct. Some items are in the wrong zone! 😊`;
+  }
+}
+
+function resetDrag() {
+  state.activitiesDone.delete('activity4');
+  initDrag();
+  document.getElementById('drag-feedback').className = 'feedback-box';
+}
+
+// ===================== PARK BUILDER =====================
+function initPark() {
+  const toolbar = document.getElementById('park-toolbar');
+  toolbar.innerHTML = '';
+  parkTools.forEach((tool, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'park-tool-btn';
+    btn.id = `tool-${i}`;
+    btn.innerHTML = `${tool.emoji}<span>${tool.label}</span>`;
+    btn.onclick = () => setActiveTool(i, btn);
+    toolbar.appendChild(btn);
+  });
+}
+
+function setActiveTool(i, btn) {
+  document.querySelectorAll('.park-tool-btn').forEach(b => b.classList.remove('active-tool'));
+  btn.classList.add('active-tool');
+  activeTool = parkTools[i];
+}
+
+function placeElement(e) {
+  if (!activeTool) { showToast('Pick a tool from the toolbar first! 👆'); return; }
+  const canvas = document.getElementById('park-canvas');
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const el = document.createElement('div');
+  el.className = 'park-element';
+  el.textContent = activeTool.emoji;
+  el.style.left = (x - 20) + 'px';
+  el.style.top = (y - 20) + 'px';
+  canvas.appendChild(el);
+  parkPlaced.push(activeTool.emoji);
+  document.getElementById('park-item-count').textContent = `Items placed: ${parkPlaced.length}`;
+}
+
+function clearPark() {
+  const canvas = document.getElementById('park-canvas');
+  document.querySelectorAll('.park-element').forEach(e => e.remove());
+  parkPlaced = [];
+  document.getElementById('park-item-count').textContent = 'Items placed: 0';
+}
+
+function savePark() {
+  const hasSun = parkPlaced.includes('☀️');
+  const hasPanel = parkPlaced.includes('🔆');
+  if (!hasSun) { showToast('Add a Sun ☀️ first!'); return; }
+  if (!hasPanel) { showToast('Add a Solar Panel 🔆!'); return; }
+  if (parkPlaced.length < 4) { showToast('Add at least 4 items to complete your park!'); return; }
+  if (!state.activitiesDone.has('activity5')) {
+    state.points += 10; state.parkScore = 10;
+    state.activitiesDone.add('activity5');
+    updatePointsDisplay();
+    markActivityDone('activity5','Park built! ⭐');
+    showToast('+10 points! Your park is beautiful! 🌳', 'success');
+    saveToStorage();
+  } else {
+    showToast('Park saved! 🏗️ Great design!', 'success');
+  }
+}
+
+// ===================== UI HELPERS =====================
+function updatePointsDisplay() {
+  document.getElementById('total-points').textContent = state.points;
+  document.getElementById('home-points').textContent = state.points;
+  document.getElementById('home-activities-done').textContent = state.activitiesDone.size;
+}
+
+function markActivityDone(id, label) {
+  const statusEl = document.getElementById(`status-${id}`);
+  const rowEl = document.getElementById(`row-${id}`);
+  if (statusEl) { statusEl.textContent = `✅ ${label}`; statusEl.className = 'activity-status done'; }
+  if (rowEl) rowEl.classList.add('completed');
+}
+
+function updateHome() {
+  updatePointsDisplay();
+}
+
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'success' ? ' success-toast' : '');
+  setTimeout(() => t.className = 'toast', 2800);
+}
+
+// ===================== TEACHER =====================
+function checkPin() {
+  const pin = document.getElementById('pin-input').value;
+  if (pin === '1234') {
+    document.getElementById('teacher-gate-view').style.display = 'none';
+    document.getElementById('teacher-dashboard-view').style.display = 'block';
+    loadTeacherDashboard();
+  } else {
+    showToast('Wrong PIN! Try again. Hint: 1234 🔑');
+  }
+}
+
+function logoutTeacher() {
+  document.getElementById('teacher-gate-view').style.display = 'block';
+  document.getElementById('teacher-dashboard-view').style.display = 'none';
+  document.getElementById('pin-input').value = '';
+}
+
+function loadTeacherDashboard() {
+  const allStudents = getStudentsFromStorage();
+  const total = allStudents.length;
+  const avgPts = total ? Math.round(allStudents.reduce((a,s) => a+s.points, 0) / total) : 0;
+  const totalActs = allStudents.reduce((a,s) => a+s.activities, 0);
+  const pct = total ? Math.round((totalActs / (total * 5)) * 100) : 0;
+
+  document.getElementById('dash-students').textContent = total || 1;
+  document.getElementById('dash-avg').textContent = avgPts || state.points;
+  document.getElementById('dash-complete').textContent = (pct || Math.round((state.activitiesDone.size/5)*100)) + '%';
+  document.getElementById('dash-activities').textContent = totalActs || state.activitiesDone.size;
+
+  const tbody = document.getElementById('student-table-body');
+  tbody.innerHTML = '';
+
+  const students = total > 0 ? allStudents : [{
+    name: state.studentName || 'Current Student',
+    points: state.points,
+    activities: state.activitiesDone.size,
+    done: Array.from(state.activitiesDone)
+  }];
+
+  const actNames = ['Quiz','Match','Fill','Sort','Park'];
+  const actKeys = ['activity1','activity2','activity3','activity4','activity5'];
+
+  students.forEach(s => {
+    const tr = document.createElement('tr');
+    const cps = actKeys.map(k => s.done && s.done.includes(k)
+      ? '<span class="checkpoint-dot cp-done"></span>'
+      : '<span class="checkpoint-dot cp-pending"></span>').join('');
+    const pct = Math.round((s.activities / 5) * 100);
+    tr.innerHTML = `
+      <td><strong>${s.name}</strong></td>
+      <td><span style="font-weight:800;color:var(--sun-dark);">${s.points} pts</span></td>
+      <td>${s.activities}/5</td>
+      <td>${cps}</td>
+      <td><span class="progress-pill">${pct}% done</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  const bars = document.getElementById('activity-bars');
+  bars.innerHTML = '';
+  actNames.forEach((name, i) => {
+    const key = actKeys[i];
+    const count = students.filter(s => s.done && s.done.includes(key)).length || (state.activitiesDone.has(key) ? 1 : 0);
+    const pct2 = Math.round((count / Math.max(students.length,1)) * 100);
+    bars.innerHTML += `
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:14px;font-weight:700;">${name}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--sky-dark);">${pct2}%</span>
+        </div>
+        <div style="background:#e0e8f0;border-radius:50px;height:12px;overflow:hidden;">
+          <div style="width:${pct2}%;height:100%;background:linear-gradient(90deg,var(--sky),var(--sun));border-radius:50px;transition:width .4s;"></div>
+        </div>
+      </div>`;
+  });
+}
+
+// ===================== STORAGE =====================
+function saveToStorage() {
+  const data = {
+    name: state.studentName,
+    points: state.points,
+    activities: state.activitiesDone.size,
+    done: Array.from(state.activitiesDone),
+    timestamp: Date.now()
+  };
+  try {
+    const all = JSON.parse(localStorage.getItem('solarParkStudents') || '[]');
+    const idx = all.findIndex(s => s.name === state.studentName);
+    if (idx >= 0) all[idx] = data; else all.push(data);
+    localStorage.setItem('solarParkStudents', JSON.stringify(all));
+  } catch(e) {}
+}
+
+function getStudentsFromStorage() {
+  try {
+    return JSON.parse(localStorage.getItem('solarParkStudents') || '[]');
+  } catch(e) { return []; }
+}
+
+// ===================== INIT =====================
+document.getElementById('student-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') startApp();
+});
+</script>
+</body>
+</html>
